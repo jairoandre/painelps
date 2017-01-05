@@ -1,0 +1,222 @@
+@width: 1920px;
+@height: 1080px;
+
+body {
+  margin: 0;
+  padding: 0;
+  background: rgb(0, 0, 0);
+}
+
+.div-padd-left {
+  padding-left: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.content {
+  width: @width;
+  height: @height;
+  transform-origin: 0 0;
+}
+
+@headerHeight: 80px;
+
+.header {
+  width: @width;
+  height: @headerHeight;
+  background: #ccc;
+  position: relative;
+}
+
+
+.th {
+  line-height: @headerHeight;
+  font-size: 25px;
+  position: absolute;
+  color: #fff;
+  text-shadow: 1px 1px #111;
+}
+
+@rowHeight: 100px;
+
+.td {
+  height: @rowHeight;
+  line-height: @rowHeight;
+  font-size: 30px;
+  position: absolute;
+  color: #fff;
+}
+
+@wAtendimento: 150px;
+
+.th-atendimento {
+  width: @wAtendimento;
+  background: rgb(24, 108, 195);
+}
+
+.td-atendimento {
+  width: @wAtendimento;
+  background: rgba(24, 108, 195, 0.2);
+}
+
+
+@wRisco: 100px;
+@oRisco: @wAtendimento;
+
+.th-risco {
+  width: @wRisco;
+  left: @oRisco;
+  background: rgb(22, 99, 179);
+}
+
+.td-risco {
+  width: @wRisco;
+  left: @oRisco;
+  background: rgba(22, 99, 179, 0.2);
+}
+
+@wPaciente: 400px;
+@oPaciente: @wRisco + @oRisco;
+
+.th-paciente {
+  width: @wPaciente;
+  left: @oPaciente;
+  background: rgb(8, 83, 161);
+}
+
+.td-paciente {
+  width: @wPaciente;
+  left: @oPaciente;
+  background: rgba(8, 83, 161, 0.2);
+}
+
+@wConvenio: 180px;
+@oConvenio: @wPaciente + @oPaciente;
+
+.th-convenio {
+  width: @wConvenio;
+  left: @oConvenio;
+  background: rgb(0, 51, 105);
+}
+
+.td-convenio {
+  width: @wConvenio;
+  left: @oConvenio;
+  background: rgba(0, 51, 105, 0.2);
+}
+
+@wObservacao: 160px;
+@oObservacao: @wConvenio + @oConvenio;
+
+.th-observacao {
+  width: @wObservacao;
+  left: @oObservacao;
+  background: rgb(20, 59, 99);
+}
+
+.td-observacao {
+  width: @wObservacao;
+  left: @oObservacao;
+  background: rgba(20, 59, 99, 0.2);
+}
+
+@wEtapa: 180px;
+@oEtapa: @wObservacao + @oObservacao;
+
+.th-etapa {
+  width: @wEtapa;
+  left: @oEtapa;
+  background: rgb(191, 41, 8);
+}
+
+.td-etapa {
+  width: @wEtapa;
+  left: @oEtapa;
+  background: rgba(191, 41, 8, 0.2);
+}
+
+@wTempo: 125px;
+@oTempo: @wEtapa + @oEtapa;
+
+.th-tempo {
+  width: @wTempo;
+  left: @oTempo;
+  background: rgb(130, 46, 28);
+}
+
+.td-tempo {
+  width: @wTempo;
+  left: @oTempo;
+  background: rgba(130, 46, 28, 0.2);
+}
+
+@wExames: 225px;
+@oExames: @wTempo + @oTempo;
+
+.th-exames {
+  width: @wExames;
+  left: @oExames;
+  background: rgb(49, 120, 73);
+}
+
+.td-exames {
+  width: @wExames;
+  left: @oExames;
+  background: rgba(49, 120, 73, 0.2);
+}
+
+@wProtocolo: 150px;
+@oProtocolo: @wExames + @oExames;
+
+.th-protocolo {
+  width: @wProtocolo;
+  left: @oProtocolo;
+  background: rgb(65, 101, 0);
+}
+
+.td-protocolo {
+  width: @wProtocolo;
+  left: @oProtocolo;
+  background: rgba(65, 101, 0, 0.2);
+}
+
+@oInternar: @wProtocolo + @oProtocolo;
+@wInternar: @width - @oInternar;
+
+.th-internar {
+  width: @wInternar;
+  left: @oInternar;
+  background: rgb(227, 145, 23);
+}
+
+.td-internar {
+  width: @wInternar;
+  left: @oInternar;
+  background: rgba(227, 145, 23, 0.2);
+}
+
+// ROWS
+
+.rows {
+  position: absolute;
+  width: @width;
+  height: @height - @headerHeight;
+  top: @headerHeight;
+}
+
+.row {
+	position: absolute;
+  width: @width;
+	height: @rowHeight;
+	line-height: @rowHeight;
+}
+
+.rowLoop(10);
+
+.rowLoop (@n, @i:0) when (@i =< @n) {
+  .row--@{i} {
+    top: @i * @rowHeight;
+  }
+  .rowLoop(@n, (@i + 1));
+}
