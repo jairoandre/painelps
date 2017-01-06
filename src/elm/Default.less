@@ -7,11 +7,24 @@ body {
   background: rgb(0, 0, 0);
 }
 
-.div-padd-left {
-  padding-left: 5px;
+.ellipsis-text {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.lpadd {
+  text-align: left;
+  padding-left: 5px;
+}
+
+.rpadd {
+  text-align: right;
+  padding-right: 5px;
+}
+
+.centering {
+  text-align: center;
 }
 
 .content {
@@ -48,7 +61,7 @@ body {
   color: #fff;
 }
 
-@wAtendimento: 150px;
+@wAtendimento: 130px;
 
 .th-atendimento {
   width: @wAtendimento;
@@ -91,7 +104,7 @@ body {
   background: rgba(8, 83, 161, 0.2);
 }
 
-@wConvenio: 180px;
+@wConvenio: 220px;
 @oConvenio: @wPaciente + @oPaciente;
 
 .th-convenio {
@@ -103,10 +116,11 @@ body {
 .td-convenio {
   width: @wConvenio;
   left: @oConvenio;
+  font-size: 25px;
   background: rgba(0, 51, 105, 0.2);
 }
 
-@wObservacao: 160px;
+@wObservacao: 250px;
 @oObservacao: @wConvenio + @oConvenio;
 
 .th-observacao {
@@ -121,7 +135,15 @@ body {
   background: rgba(20, 59, 99, 0.2);
 }
 
-@wEtapa: 180px;
+.in-observacao {
+  font-size: 20px;
+  line-height: 20px;
+  white-space: normal;
+  padding: 5px;
+  overflow: hidden;
+}
+
+@wEtapa: 120px;
 @oEtapa: @wObservacao + @oObservacao;
 
 .th-etapa {
@@ -136,7 +158,7 @@ body {
   background: rgba(191, 41, 8, 0.2);
 }
 
-@wTempo: 125px;
+@wTempo: 160px;
 @oTempo: @wEtapa + @oEtapa;
 
 .th-tempo {
@@ -219,4 +241,186 @@ body {
     top: @i * @rowHeight;
   }
   .rowLoop(@n, (@i + 1));
+}
+
+@riscoSize: 40px;
+
+.risco {
+  height: @riscoSize;
+  width: @riscoSize;
+  margin: ((@rowHeight - @riscoSize) / 2) ((@wRisco - @riscoSize) / 2);
+  border-radius: 5px;
+}
+
+// 1	EMERGÊNCIA
+.risco--1 {
+  background: rgb(185, 15, 15);
+}
+// 2	MUITO URGENTE
+.risco--2 {
+  background: rgb(230, 83, 1);
+}
+// 3	URGENTE
+.risco--3 {
+  background: rgb(255, 224, 19);
+}
+// 4	POUCO URGENTE
+.risco--4 {
+  background: rgb(8, 149, 251);
+}
+// 5	NÃO URGENTE
+.risco--5 {
+  background: rgb(63, 255, 24);
+}
+// 6	MORTE
+.risco--6 {
+  background: rgb(0, 0, 0);
+}
+// 7	SITUACAO INCOMPATIVEL
+.risco--7 {
+  background: rgb(107, 14, 213);
+}
+
+// ETAPA
+
+@etapaSize: 40px;
+
+.etapa {
+  height: @etapaSize;
+  width: @riscoSize;
+  margin: ((@rowHeight - @etapaSize) / 2) ((@wEtapa - @etapaSize) / 2);
+  border-radius: 5px;
+}
+
+// 1	CADASTRO NO TOTEM
+.etapa--1 {
+  background: rgb(8, 226, 88);
+}
+// 10	CLASSIFICAÇÃO CHAMADA
+.etapa--10 {
+  background: rgb(5, 195, 138);
+}
+// 11	CLASSIFICAÇÃO INÍCIO
+.etapa--11 {
+  background: rgb(8, 206, 226);
+}
+// 12	CLASSIFICAÇÃO FINAL
+.etapa--12 {
+  background: rgb(38, 226, 8);
+}
+// 20	ATENDIMENTO ADMINISTRATIVO CHAMADA
+.etapa--20 {
+  background: rgb(8, 141, 226);
+}
+// 21	ATENDIMENTO ADMINISTRATIVO INÍCIO
+.etapa--21 {
+  background: rgb(138, 21, 153);
+}
+// 22	ATENDIMENTO ADMINISTRATIVO FINAL
+.etapa--22 {
+  background: rgb(113, 19, 93);
+}
+// 30	ATENDIMENTO MÉDICO CHAMADA
+.etapa--30 {
+  background: rgb(38, 226, 8);
+}
+// 31	ATENDIMENTO MÉDICO INÍCIO
+.etapa--31 {
+  background: rgb(38, 226, 8);
+}
+// 32	ATENDIMENTO MÉDICO FINAL
+.etapa--32 {
+  background: rgb(48, 238, 0);
+}
+// 40	ATENDIMENTO SOCIAL CHAMADA
+.etapa--40 {
+  background: rgb(215, 32, 252);
+}
+// 41	ATENDIMENTO SOCIAL INÍCIO
+.etapa--41 {
+  background: rgb(217, 86, 244);
+}
+// 42	ATENDIMENTO SOCIAL FINAL
+.etapa--42 {
+  background: rgb(222, 111, 245);
+}
+// 90	ATENDIMENTO MÉDICO ALTA
+.etapa--90 {
+  background: rgb(85, 244, 168);
+}
+// 99	REMOVIDO DA LISTA
+.etapa--99 {
+  background: rgb(166, 153, 168);
+}
+// 50	EXAME LABORATORIAL CHAMADA
+.etapa--50 {
+  background: rgb(85, 149, 244);
+}
+// 60	EXAME IMAGEM CHAMADA
+.etapa--60 {
+  background: rgb(85, 168, 244);
+}
+// 51	EXAME LABORATORIAL INÍCIO
+.etapa--51 {
+  background: rgb(217, 86, 244);
+}
+// 52	EXAME LABORATORIAL FINAL
+.etapa--52 {
+  background: rgb(217, 86, 244);
+}
+// 61	EXAME DE IMAGEM INÍCIO
+.etapa--61 {
+  background: rgb(93, 85, 244);
+}
+// 62	EXAME DE IMAGEM FINAL
+.etapa--62 {
+  background: rgb(107, 101, 221);
+}
+// 70	MEDICAÇÃO CHAMADA
+.etapa--70 {
+  background: rgb(244, 194, 85);
+}
+// 71	MEDICAÇÃO INÍCIO
+.etapa--71 {
+  background: rgb(244, 194, 85);
+}
+// 72	MEDICAÇÃO FINAL
+.etapa--72 {
+  background: rgb(227, 172, 52);
+}
+// 80	PROCEDIMENTO CHAMADA
+.etapa--80 {
+  background: rgb(244, 180, 85);
+}
+// 81	PROCEDIMENTO INÍCIO
+.etapa--80 {
+  background: rgb(232, 148, 24);
+}
+// 82	PROCEDIMENTO FINAL
+.etapa--82 {
+  background: rgb(203, 130, 22);
+}
+// 59	EXAME LABORATORIAL REMOÇÃO
+.etapa--59 {
+  background: rgb(30, 50, 186);
+}
+// 69	EXAME DE IMAGEM REMOÇÃO
+.etapa--69 {
+  background: rgb(174, 85, 244);
+}
+// 79	MEDICAÇÃO REMOÇÃO
+.etapa--79 {
+  background: rgb(244, 85, 209);
+}
+// 89	PROCEDIMENTO REMOÇÃO
+.etapa--89 {
+  background: rgb(14, 197, 209);
+}
+// 33	ATENDIMENTO MÉDICO REAVALIACAO
+.etapa--33 {
+  background: rgb(4, 131, 177);
+}
+// 100	PRE-CLASSIFICACAO CHAMADA
+.etapa--100 {
+  background: rgb(231, 17, 197);
 }

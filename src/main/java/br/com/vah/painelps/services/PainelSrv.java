@@ -10,20 +10,19 @@ public class PainelSrv extends AbstractSrv {
 
     String sql =
         "SELECT " +
-            "  ATD.CD_PACIENTE, " +
-            "  PAC.NM_PACIENTE, " +
-            "  ATD.CD_ATENDIMENTO, " +
-            "  CONV.NM_CONVENIO, " +
-            "  ESP.DS_ESPECIALID, " +
-            "  ATD.TP_PRIORIDADE, " +
-            "  ATD.NR_CHAMADA_PAINEL, " +
-            "  COR.NM_COR, " +
-            "  CLAS.DS_TIPO_RISCO, " +
-            "  TEMP_PRO.CD_TIPO_TEMPO_PROCESSO, " +
-            "  TIP_TEMP_PRO.DS_TIPO_TEMPO_PROCESSO, " +
-            "  TEMP_PRO.DH_PROCESSO, " +
-            "  TATD.DS_ALERGIA, " +
-            "  TATD.DS_OBSERVACAO " +
+            "  ATD.CD_PACIENTE, " + // 0
+            "  PAC.NM_PACIENTE, " + // 1
+            "  ATD.CD_ATENDIMENTO, " + // 2
+            "  CONV.NM_CONVENIO, " + // 3
+            "  ESP.DS_ESPECIALID, " + // 4
+            "  ATD.TP_PRIORIDADE, " + // 5
+            "  ATD.NR_CHAMADA_PAINEL, " + // 6
+            "  COR.NM_COR, " + // 7
+            "  CLAS.CD_CLASSIFICACAO, " + // 8
+            "  TEMP_PRO.CD_TIPO_TEMPO_PROCESSO, " + // 9
+            "  TEMP_PRO.DH_PROCESSO, " + // 10
+            "  TATD.DS_ALERGIA, " + // 11
+            "  TATD.DS_OBSERVACAO " + // 12
             "FROM DBAMV.TB_ATENDIME ATD " +
             "  JOIN DBAMV.ESPECIALID ESP " +
             "    ON ATD.CD_ESPECIALID = ESP.CD_ESPECIALID " +
@@ -74,17 +73,17 @@ public class PainelSrv extends AbstractSrv {
         atendimento.put("chamada", row[6]);
         atendimento.put("cor", row[7]);
         atendimento.put("risco", row[8]);
-        atendimento.put("processo", row[9]);
-        atendimento.put("etapaAtual", row[10]);
+        atendimento.put("etapa", row[9]);
+        atendimento.put("entrada", row[10]);
         atendimento.put("tempo", 0);
-        inicioAtendimentoMap.put(row[0], (Date) row[11]);
-        atendimento.put("alergia", row[12]);
-        atendimento.put("observacao", row[13]);
+        inicioAtendimentoMap.put(row[0], (Date) row[10]);
+        atendimento.put("alergia", row[11]);
+        atendimento.put("observacao", row[12]);
         atendimentos.put(row[0], atendimento);
         result.add(atendimento);
       } else {
-        atendimento.put("etapa", row[10]);
-        long deltaTime = ((Date) row[11]).getTime() - inicioAtendimentoMap.get(row[0]).getTime();
+        atendimento.put("etapa", row[9]);
+        long deltaTime = ((Date) row[10]).getTime() - inicioAtendimentoMap.get(row[0]).getTime();
         atendimento.put("tempo", deltaTime / 3600);
       }
     }
