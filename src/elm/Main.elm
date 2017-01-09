@@ -19,7 +19,7 @@ main =
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model [] 0 0 Nothing, fetchPacientes )
+    ( Model [] 0 0 Nothing True, fetchPacientes )
 
 
 tickTime : List PacientePS -> List PacientePS
@@ -36,15 +36,15 @@ update message model =
                     List.length pacientes
 
                 pages =
-                    if (len % 10) == 0 then
-                        len // 10
+                    if (len % patientsPerPage) == 0 then
+                        len // patientsPerPage
                     else
-                        (len // 10) + 1
+                        (len // patientsPerPage) + 1
             in
-                ( { model | pacientes = pacientes, pages = pages, page = 0, error = Nothing }, Cmd.none )
+                ( { model | pacientes = pacientes, pages = pages, page = 0, error = Nothing, loading = False }, Cmd.none )
 
         ReceivePacientes (Err e) ->
-            ( { model | error = Just e }, Cmd.none )
+            ( { model | error = Just e, loading = False }, Cmd.none )
 
         TickTime newTime ->
             ( { model | pacientes = tickTime model.pacientes }, Cmd.none )
@@ -52,10 +52,14 @@ update message model =
         UpdatePage newTime ->
             ( { model | page = ((model.page + 1) % model.pages) }, Cmd.none )
 
+        RefreshPacientes newTime ->
+            ( { model | loading = True }, fetchPacientes )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Time.every Time.minute TickTime
+        , Time.every (2 * Time.minute) RefreshPacientes
         , Time.every (10 * Time.second) UpdatePage
         ]

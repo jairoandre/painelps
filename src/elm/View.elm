@@ -26,13 +26,13 @@ centeringDiv oClass content =
     customDiv oClass "centering" content
 
 
-riscoToHtml : Int -> Html Msg
-riscoToHtml risco =
+classificacaoToHtml : String -> Html Msg
+classificacaoToHtml classificacao =
     let
-        riscoClass =
-            "risco risco--" ++ (toString risco)
+        classificacaoClass =
+            "classificacao classificacao--" ++ classificacao
     in
-        div [ class riscoClass ] []
+        div [ class classificacaoClass ] []
 
 
 etapaToHtml : PacientePS -> Html Msg
@@ -56,10 +56,10 @@ pacientesToHtml : Int -> PacientePS -> Html Msg
 pacientesToHtml idx paciente =
     div [ class <| "row row--" ++ (toString idx) ]
         [ lPaddDiv "td td-atendimento" <| text <| toString paciente.atendimento
-        , div [ class "td td-risco" ] [ riscoToHtml paciente.risco ]
+        , div [ class "td td-classificacao" ] [ classificacaoToHtml paciente.classificacao ]
         , lPaddDiv "td td-paciente" <| text paciente.nome
         , lPaddDiv "td td-convenio" <| text paciente.convenio
-        , customDiv "td td-observacao" "in-observacao" <| observacaoToHtml paciente.observacao
+        , customDiv "td td-observacao" "in-observacao" <| observacaoToHtml "?"
         , customDiv "td td-etapa" "" <| etapaToHtml paciente
         , rPaddDiv "td td-tempo" <| text <| fancyTime paciente.tempo
         , lPaddDiv "td td-exames" <| text "?"
@@ -72,7 +72,7 @@ headerView : Html Msg
 headerView =
     div [ class "header" ]
         [ lPaddDiv "th th-atendimento" <| text "ATEND."
-        , centeringDiv "th th-risco" <| text "RISCO"
+        , centeringDiv "th th-classificacao" <| text "CLASS."
         , lPaddDiv "th th-paciente" <| text "PACIENTE"
         , lPaddDiv "th th-convenio" <| text "CONVÊNIO"
         , lPaddDiv "th th-observacao" <| text "OBS."
@@ -82,6 +82,11 @@ headerView =
         , lPaddDiv "th th-protocolo" <| text "PROTOC."
         , lPaddDiv "th th-internar" <| text "INTERNAR"
         ]
+
+
+patientsPerPage : Int
+patientsPerPage =
+    8
 
 
 fancyTime : Int -> String
@@ -103,9 +108,15 @@ view : Model -> Html Msg
 view model =
     case model.error of
         Nothing ->
-            div [ class "content", style [ ( "transform", "scale(0.70)" ) ] ]
+            div
+                [ class "content"
+                , style
+                    [ ( "-webkit-transform", "scale(0.655)" )
+                    , ( "-webkit-transform-origin", "0 0" )
+                    ]
+                ]
                 [ headerView
-                , div [ class "rows" ] <| List.indexedMap pacientesToHtml <| List.take 10 <| List.drop (model.page * 10) model.pacientes
+                , div [ class "rows" ] <| List.indexedMap pacientesToHtml <| List.take patientsPerPage <| List.drop (model.page * patientsPerPage) model.pacientes
                 ]
 
         Just e ->

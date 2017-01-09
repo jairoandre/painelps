@@ -71,27 +71,28 @@ body {
 
 .td-atendimento {
   width: @wAtendimento;
+  font-size: 20px;
   background: rgba(24, 108, 195, 0.2);
 }
 
 
-@wRisco: 100px;
-@oRisco: @wAtendimento;
+@wclassificacao: 100px;
+@oclassificacao: @wAtendimento;
 
-.th-risco {
-  width: @wRisco;
-  left: @oRisco;
+.th-classificacao {
+  width: @wclassificacao;
+  left: @oclassificacao;
   background: rgb(22, 99, 179);
 }
 
-.td-risco {
-  width: @wRisco;
-  left: @oRisco;
+.td-classificacao {
+  width: @wclassificacao;
+  left: @oclassificacao;
   background: rgba(22, 99, 179, 0.2);
 }
 
 @wPaciente: 400px;
-@oPaciente: @wRisco + @oRisco;
+@oPaciente: @wclassificacao + @oclassificacao;
 
 .th-paciente {
   width: @wPaciente;
@@ -105,20 +106,20 @@ body {
   background: rgba(8, 83, 161, 0.2);
 }
 
-@wConvenio: 220px;
+@wConvenio: 200px;
 @oConvenio: @wPaciente + @oPaciente;
 
 .th-convenio {
   width: @wConvenio;
   left: @oConvenio;
-  background: rgb(0, 51, 105);
+  background: rgb(5, 61, 120);
 }
 
 .td-convenio {
   width: @wConvenio;
   left: @oConvenio;
   font-size: 25px;
-  background: rgba(0, 51, 105, 0.2);
+  background: rgba(5, 61, 120, 0.2);
 }
 
 @wObservacao: 250px;
@@ -127,13 +128,13 @@ body {
 .th-observacao {
   width: @wObservacao;
   left: @oObservacao;
-  background: rgb(20, 59, 99);
+  background: rgb(69, 0, 147);
 }
 
 .td-observacao {
   width: @wObservacao;
   left: @oObservacao;
-  background: rgba(20, 59, 99, 0.2);
+  background: rgba(69, 0, 147, 0.2);
 }
 
 .in-observacao {
@@ -244,42 +245,42 @@ body {
   .rowLoop(@n, (@i + 1));
 }
 
-@riscoSize: 40px;
+@classificacaoSize: 60px;
 
-.risco {
-  height: @riscoSize;
-  width: @riscoSize;
-  margin: ((@rowHeight - @riscoSize) / 2) ((@wRisco - @riscoSize) / 2);
+.classificacao {
+  height: @classificacaoSize;
+  width: @classificacaoSize;
+  margin: ((@rowHeight - @classificacaoSize) / 2) ((@wclassificacao - @classificacaoSize) / 2);
   border-radius: 5px;
 }
 
 // 1	EMERGÊNCIA
-.risco--1 {
-  background: rgb(185, 15, 15);
+.classificacao--VERMELHO {
+  background: rgb(255, 0, 0);
 }
 // 2	MUITO URGENTE
-.risco--2 {
+.classificacao--LARANJA {
   background: rgb(230, 83, 1);
 }
 // 3	URGENTE
-.risco--3 {
-  background: rgb(255, 224, 19);
+.classificacao--AMARELO {
+  background: rgb(255, 230, 66);
 }
 // 4	POUCO URGENTE
-.risco--4 {
-  background: rgb(8, 149, 251);
+.classificacao--VERDE {
+  background: rgb(92, 255, 89);
 }
 // 5	NÃO URGENTE
-.risco--5 {
-  background: rgb(63, 255, 24);
+.classificacao--AZUL {
+  background: rgb(73, 200, 255);
 }
 // 6	MORTE
-.risco--6 {
+.classificacao--PRETO {
   background: rgb(0, 0, 0);
 }
 // 7	SITUACAO INCOMPATIVEL
-.risco--7 {
-  background: rgb(107, 14, 213);
+.classificacao--BRANCO {
+  background: rgb(255, 255, 255);
 }
 
 // ETAPA
@@ -319,7 +320,7 @@ body {
 
 .etapa--enfermagem {
   background-image: url('public/imgs/nursing.png');
-  background-color: rgb(164, 134, 249);
+  background-color: rgb(202, 185, 250);
 }
 
 // 90	ATENDIMENTO MÉDICO ALTA

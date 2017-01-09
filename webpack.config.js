@@ -3,7 +3,7 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var CleanWebpackPlugin = require('clean-webpack-plugin');
 
-console.log('\u001b[31mWEBPACK ASSEMBLE!\u001b[39m\n');
+console.log('\u001b[32mWEBPACK ASSEMBLE!\u001b[39m\n');
 
 var TARGET_ENV = process.env.npm_lifecycle_event === 'build' ? 'production' : 'development';
 
@@ -54,7 +54,7 @@ if (TARGET_ENV === 'development') {
 
     plugins: [
       new HtmlWebpackPlugin({
-        title: 'CPAM - Development',
+        title: 'Painel PS - Dev',
         template: './src/elm/index.ejs',
         filename: './index.html'
       }),

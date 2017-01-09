@@ -9,17 +9,20 @@ type alias Model =
     , pages : Int
     , page : Int
     , error : Maybe Http.Error
+    , loading : Bool
     }
 
 
 type alias PacientePS =
-    { atendimento : Int
-    , risco : Int
+    { exames : List String
+    , atendimento : Int
     , nome : String
     , convenio : String
-    , observacao : String
+    , especialidade : String
+    , classificacao : String
     , etapa : Int
     , tempo : Int
+    , alergias : String
     , prescricao : Bool
     }
 
@@ -28,3 +31,5 @@ type Msg
     = ReceivePacientes (Result Http.Error (List PacientePS))
     | TickTime Time.Time
     | UpdatePage Time.Time
+    | RefreshPacientes Time.Time
+    | ReceiveExames Int (Result Http.Error (List String))
