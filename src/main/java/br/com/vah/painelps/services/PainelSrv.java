@@ -22,7 +22,8 @@ public class PainelSrv extends AbstractSrv {
             "  TEMP_PRO.CD_TIPO_TEMPO_PROCESSO, " + // 9
             "  TEMP_PRO.DH_PROCESSO, " + // 10
             "  TATD.DS_ALERGIA, " + // 11
-            "  TATD.DS_OBSERVACAO " + // 12
+            "  TATD.DS_OBSERVACAO, " + // 12
+            "  PM.DH_IMPRESSAO " + // 13
             "FROM DBAMV.TB_ATENDIME ATD " +
             "  JOIN DBAMV.ESPECIALID ESP " +
             "    ON ATD.CD_ESPECIALID = ESP.CD_ESPECIALID " +
@@ -42,6 +43,8 @@ public class PainelSrv extends AbstractSrv {
             "    ON ATD.CD_ATENDIMENTO = TEMP_PRO.CD_ATENDIMENTO " +
             "  LEFT JOIN DBAMV.SACR_TIPO_TEMPO_PROCESSO TIP_TEMP_PRO " +
             "    ON TEMP_PRO.CD_TIPO_TEMPO_PROCESSO = TIP_TEMP_PRO.CD_TIPO_TEMPO_PROCESSO " +
+            "  LEFT JOIN DBAMV.PRE_MED PM " +
+            "    ON ATD.CD_ATENDIMENTO = PM.CD_ATENDIMENTO " +
             "WHERE ATD.TP_ATENDIMENTO = 'U' " +
             "      AND ATD.DT_ALTA IS NULL " +
             "      AND ATD.CD_MULTI_EMPRESA = 1 " +
@@ -79,12 +82,16 @@ public class PainelSrv extends AbstractSrv {
         inicioAtendimentoMap.put(row[0], (Date) row[10]);
         atendimento.put("alergia", row[11]);
         atendimento.put("observacao", row[12]);
+        atendimento.put("prescricao", row[13] != null);
         atendimentos.put(row[0], atendimento);
         result.add(atendimento);
       } else {
         atendimento.put("etapa", row[9]);
         long deltaTime = ((Date) row[10]).getTime() - inicioAtendimentoMap.get(row[0]).getTime();
-        atendimento.put("tempo", deltaTime / 3600);
+        atendimento.put("tempo", deltaTime / 60000);
+        if (row[13] != null) {
+          atendimento.put("prescricao", true);
+        }
       }
     }
     return result;

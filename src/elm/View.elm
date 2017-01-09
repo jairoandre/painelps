@@ -35,13 +35,16 @@ riscoToHtml risco =
         div [ class riscoClass ] []
 
 
-etapaToHtml : Int -> Html Msg
-etapaToHtml etapa =
-    let
-        etapaClass =
-            "etapa etapa--" ++ (toString etapa)
-    in
-        div [ class etapaClass ] []
+etapaToHtml : PacientePS -> Html Msg
+etapaToHtml paciente =
+    if paciente.prescricao then
+        div [ class "etapa etapa--enfermagem" ] []
+    else if List.member paciente.etapa [ 1, 10, 11, 12, 20, 21, 22 ] then
+        div [ class "etapa etapa--recepcao" ] []
+    else if List.member paciente.etapa [ 30, 31, 32 ] then
+        div [ class "etapa etapa--medico" ] []
+    else
+        div [ class "etapa" ] [ text <| toString paciente.etapa ]
 
 
 observacaoToHtml : String -> Html Msg
@@ -57,7 +60,7 @@ pacientesToHtml idx paciente =
         , lPaddDiv "td td-paciente" <| text paciente.nome
         , lPaddDiv "td td-convenio" <| text paciente.convenio
         , customDiv "td td-observacao" "in-observacao" <| observacaoToHtml paciente.observacao
-        , lPaddDiv "td td-etapa" <| etapaToHtml paciente.etapa
+        , customDiv "td td-etapa" "" <| etapaToHtml paciente
         , rPaddDiv "td td-tempo" <| text <| fancyTime paciente.tempo
         , lPaddDiv "td td-exames" <| text "?"
         , lPaddDiv "td td-protocolo" <| text "?"
@@ -90,7 +93,10 @@ fancyTime minutes =
         mins =
             toString (minutes % 60)
     in
-        hours ++ "h " ++ mins ++ "m"
+        if hours == "0" then
+            mins ++ "m"
+        else
+            hours ++ "h " ++ mins ++ "m"
 
 
 view : Model -> Html Msg

@@ -31,3 +31,4 @@ decodePaciente =
         |> JDP.required "observacao" maybeString
         |> JDP.required "etapa" JD.int
         |> JDP.required "tempo" JD.int
+        |> JDP.required "prescricao" JD.bool

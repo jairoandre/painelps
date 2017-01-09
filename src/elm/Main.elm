@@ -31,7 +31,17 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case message of
         ReceivePacientes (Ok pacientes) ->
-            ( { model | pacientes = pacientes, pages = ((List.length pacientes) // 10) + 1, page = 0, error = Nothing }, Cmd.none )
+            let
+                len =
+                    List.length pacientes
+
+                pages =
+                    if (len % 10) == 0 then
+                        len // 10
+                    else
+                        (len // 10) + 1
+            in
+                ( { model | pacientes = pacientes, pages = pages, page = 0, error = Nothing }, Cmd.none )
 
         ReceivePacientes (Err e) ->
             ( { model | error = Just e }, Cmd.none )

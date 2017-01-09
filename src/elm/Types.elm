@@ -20,6 +20,7 @@ type alias PacientePS =
     , observacao : String
     , etapa : Int
     , tempo : Int
+    , prescricao : Bool
     }
 
 
