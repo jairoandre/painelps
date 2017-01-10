@@ -18,7 +18,8 @@ public class PainelSrv extends AbstractSrv {
             "  TEMP_PRO.CD_TIPO_TEMPO_PROCESSO, " +
             "  TEMP_PRO.DH_PROCESSO, " +
             "  TATD.DS_ALERGIA, " +
-            "  PM.DH_IMPRESSAO " +
+            "  PM.DH_IMPRESSAO, " +
+            "  TATD.DS_OBSERVACAO " +
             "FROM DBAMV.TB_ATENDIME ATD " +
             "  JOIN DBAMV.ESPECIALID ESP " +
             "    ON ATD.CD_ESPECIALID = ESP.CD_ESPECIALID " +
@@ -67,6 +68,7 @@ public class PainelSrv extends AbstractSrv {
         inicioAtendimentoMap.put(row[0], (Date) row[6]);
         atendimento.put("alergias", row[7]);
         atendimento.put("prescricao", row[8] != null);
+        atendimento.put("observacao", row[9]);
         atendimentos.put(row[0], atendimento);
         result.add(atendimento);
       } else {

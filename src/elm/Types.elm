@@ -10,6 +10,7 @@ type alias Model =
     , page : Int
     , error : Maybe Http.Error
     , loading : Bool
+    , counter : Int
     }
 
 
@@ -24,6 +25,7 @@ type alias PacientePS =
     , tempo : Int
     , alergias : String
     , prescricao : Bool
+    , observacao : String
     }
 
 
@@ -31,5 +33,6 @@ type Msg
     = ReceivePacientes (Result Http.Error (List PacientePS))
     | TickTime Time.Time
     | UpdatePage Time.Time
+    | UpdateCounter Time.Time
     | RefreshPacientes Time.Time
     | ReceiveExames Int (Result Http.Error (List String))

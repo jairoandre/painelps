@@ -5,25 +5,25 @@ import Html.Attributes exposing (..)
 import Types exposing (..)
 
 
-customDiv : String -> String -> Html Msg -> Html Msg
-customDiv oClass iClass content =
+customDiv : String -> String -> List (Html Msg) -> Html Msg
+customDiv oClass iClass contents =
     div [ class oClass ]
-        [ div [ class iClass ] [ content ] ]
+        [ div [ class iClass ] contents ]
 
 
 lPaddDiv : String -> Html Msg -> Html Msg
 lPaddDiv oClass content =
-    customDiv oClass "ellipsis-text lpadd" content
+    customDiv oClass "ellipsis-text lpadd" [ content ]
 
 
 rPaddDiv : String -> Html Msg -> Html Msg
 rPaddDiv oClass content =
-    customDiv oClass "ellipsis-text rpadd" content
+    customDiv oClass "ellipsis-text rpadd" [ content ]
 
 
 centeringDiv : String -> Html Msg -> Html Msg
 centeringDiv oClass content =
-    customDiv oClass "centering" content
+    customDiv oClass "centering" [ content ]
 
 
 classificacaoToHtml : String -> Html Msg
@@ -47,22 +47,41 @@ etapaToHtml paciente =
         div [ class "etapa" ] [ text <| toString paciente.etapa ]
 
 
-observacaoToHtml : String -> Html Msg
-observacaoToHtml observacao =
-    div [] <| List.map (\s -> div [] [ text s ]) (String.split "\x0D" observacao)
+scrollableItems : Int -> List String -> Html Msg
+scrollableItems counter items =
+    let
+        lenItems =
+            List.length items
+
+        visibleItems =
+            if lenItems < 3 then
+                items
+            else
+                let
+                    modLen =
+                        counter % lenItems
+                in
+                    List.take 3 <| (List.drop modLen items) ++ (List.take modLen items)
+    in
+        div [] <| List.map (\s -> div [ class "ellipsis-text" ] [ text s ]) visibleItems
 
 
-pacientesToHtml : Int -> PacientePS -> Html Msg
-pacientesToHtml idx paciente =
+pacientesToHtml : Int -> Int -> PacientePS -> Html Msg
+pacientesToHtml counter idx paciente =
     div [ class <| "row row--" ++ (toString idx) ]
-        [ lPaddDiv "td td-atendimento" <| text <| toString paciente.atendimento
+        [ customDiv "td td-atendimento"
+            "lpadd"
+            [ div [] [ text <| toString paciente.atendimento ]
+            , div [ class "ellipsis-text" ] [ text paciente.especialidade ]
+            ]
         , div [ class "td td-classificacao" ] [ classificacaoToHtml paciente.classificacao ]
         , lPaddDiv "td td-paciente" <| text paciente.nome
-        , lPaddDiv "td td-convenio" <| text paciente.convenio
-        , customDiv "td td-observacao" "in-observacao" <| observacaoToHtml "?"
-        , customDiv "td td-etapa" "" <| etapaToHtml paciente
+        , customDiv "td td-convenio" "" [ div [ class ("convenio convenio--" ++ paciente.convenio) ] [] ]
+        , customDiv "td td-observacao" "in-observacao" <|
+            [ scrollableItems counter (String.split "\x0D" paciente.observacao) ]
+        , customDiv "td td-etapa" "" [ etapaToHtml paciente ]
         , rPaddDiv "td td-tempo" <| text <| fancyTime paciente.tempo
-        , lPaddDiv "td td-exames" <| text "?"
+        , customDiv "td td-exames" "in-exames" [ scrollableItems counter paciente.exames ]
         , lPaddDiv "td td-protocolo" <| text "?"
         , lPaddDiv "td td-internar" <| text "?"
         ]
@@ -71,10 +90,10 @@ pacientesToHtml idx paciente =
 headerView : Html Msg
 headerView =
     div [ class "header" ]
-        [ lPaddDiv "th th-atendimento" <| text "ATEND."
+        [ lPaddDiv "th th-atendimento" <| text "ATEND./ESPEC."
         , centeringDiv "th th-classificacao" <| text "CLASS."
         , lPaddDiv "th th-paciente" <| text "PACIENTE"
-        , lPaddDiv "th th-convenio" <| text "CONVÊNIO"
+        , centeringDiv "th th-convenio" <| text "CONV."
         , lPaddDiv "th th-observacao" <| text "OBS."
         , centeringDiv "th th-etapa" <| text "ETAPA"
         , rPaddDiv "th th-tempo" <| text "TEMPO"
@@ -116,7 +135,10 @@ view model =
                     ]
                 ]
                 [ headerView
-                , div [ class "rows" ] <| List.indexedMap pacientesToHtml <| List.take patientsPerPage <| List.drop (model.page * patientsPerPage) model.pacientes
+                , div [ class "rows" ] <|
+                    List.indexedMap (pacientesToHtml model.counter) <|
+                        List.take patientsPerPage <|
+                            List.drop (model.page * patientsPerPage) model.pacientes
                 ]
 
         Just e ->
