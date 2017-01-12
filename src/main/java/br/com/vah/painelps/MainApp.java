@@ -3,10 +3,8 @@ package br.com.vah.painelps;
 import br.com.vah.painelps.services.PainelSrv;
 
 import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Response;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -31,5 +29,22 @@ public class MainApp {
   public List<String> exames(@PathParam("atendimento") Long atendimento) {
     return painelSrv.getExames(atendimento);
   }
+
+  @POST
+  @Path("/protocolo")
+  @Consumes("application/json")
+  public Response protocolo(Map body) {
+    String output = painelSrv.protocolo((Integer) body.get("atendimento"), (Integer) body.get("tipo"));
+    return Response.status(200).entity(output).build();
+  }
+
+  @GET
+  @Path("/atendimento/{atendimento}")
+  @Produces("application/json")
+  public Map<String, Object> atendimento(@PathParam("atendimento") Integer atendimento) {
+    return painelSrv.pacienteByAtendimento(atendimento);
+  }
+
+
 
 }

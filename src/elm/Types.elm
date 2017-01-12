@@ -26,6 +26,9 @@ type alias PacientePS =
     , alergias : String
     , prescricao : Bool
     , observacao : String
+    , internacao : Bool
+    , sepse : Bool
+    , protocolo : Int
     }
 
 

@@ -61,9 +61,30 @@ scrollableItems counter items =
                     modLen =
                         counter % lenItems
                 in
-                    List.take 3 <| (List.drop modLen items) ++ (List.take modLen items)
+                    List.take 3 <| ((List.drop modLen items) ++ (List.take modLen items))
     in
         div [] <| List.map (\s -> div [ class "ellipsis-text" ] [ text s ]) visibleItems
+
+
+protocoloToHtml : Int -> Html Msg
+protocoloToHtml protocolo =
+    if protocolo > -1 then
+        div [ class ("protocolo protocolo--" ++ toString protocolo) ]
+            [ case protocolo of
+                0 ->
+                    text "SEPSE"
+
+                1 ->
+                    text "DOR TORÁX."
+
+                2 ->
+                    text "CÓLICA RENAL"
+
+                _ ->
+                    text "AVC"
+            ]
+    else
+        text ""
 
 
 pacientesToHtml : Int -> Int -> PacientePS -> Html Msg
@@ -71,19 +92,28 @@ pacientesToHtml counter idx paciente =
     div [ class <| "row row--" ++ (toString idx) ]
         [ customDiv "td td-atendimento"
             "lpadd"
-            [ div [] [ text <| toString paciente.atendimento ]
+            [ div [ class "ellipsis-text" ] [ text <| (toString paciente.atendimento) ++ " - " ++ paciente.convenio ]
             , div [ class "ellipsis-text" ] [ text paciente.especialidade ]
             ]
         , div [ class "td td-classificacao" ] [ classificacaoToHtml paciente.classificacao ]
         , lPaddDiv "td td-paciente" <| text paciente.nome
         , customDiv "td td-convenio" "" [ div [ class ("convenio convenio--" ++ paciente.convenio) ] [] ]
         , customDiv "td td-observacao" "in-observacao" <|
-            [ scrollableItems counter (String.split "\x0D" paciente.observacao) ]
+            [ scrollableItems counter <|
+                List.filter (\s -> s /= "") <|
+                    ((String.split "\x0D" paciente.observacao)
+                        ++ (String.split " " paciente.alergias)
+                    )
+            ]
         , customDiv "td td-etapa" "" [ etapaToHtml paciente ]
         , rPaddDiv "td td-tempo" <| text <| fancyTime paciente.tempo
         , customDiv "td td-exames" "in-exames" [ scrollableItems counter paciente.exames ]
-        , lPaddDiv "td td-protocolo" <| text "?"
-        , lPaddDiv "td td-internar" <| text "?"
+        , centeringDiv "td td-protocolo" <| protocoloToHtml paciente.protocolo
+        , div [ class "td td-internar" ] <|
+            if paciente.internacao then
+                [ div [ class "internar" ] [] ]
+            else
+                [ div [ class "internar internar--nao" ] [] ]
         ]
 
 
@@ -94,12 +124,12 @@ headerView =
         , centeringDiv "th th-classificacao" <| text "CLASS."
         , lPaddDiv "th th-paciente" <| text "PACIENTE"
         , centeringDiv "th th-convenio" <| text "CONV."
-        , lPaddDiv "th th-observacao" <| text "OBS."
+        , lPaddDiv "th th-observacao" <| text "OBS./ALERGIAS"
         , centeringDiv "th th-etapa" <| text "ETAPA"
         , rPaddDiv "th th-tempo" <| text "TEMPO"
         , lPaddDiv "th th-exames" <| text "EXAMES"
-        , lPaddDiv "th th-protocolo" <| text "PROTOC."
-        , lPaddDiv "th th-internar" <| text "INTERNAR"
+        , centeringDiv "th th-protocolo" <| text "PROTOC."
+        , centeringDiv "th th-internar" <| text "INTER."
         ]
 
 

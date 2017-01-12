@@ -1,6 +1,10 @@
 package br.com.vah.painelps.services;
 
+import org.hibernate.SQLQuery;
+import org.hibernate.Session;
+
 import javax.ejb.Stateless;
+import java.math.BigDecimal;
 import java.util.*;
 
 @Stateless
@@ -19,7 +23,10 @@ public class PainelSrv extends AbstractSrv {
             "  TEMP_PRO.DH_PROCESSO, " +
             "  TATD.DS_ALERGIA, " +
             "  PM.DH_IMPRESSAO, " +
-            "  TATD.DS_OBSERVACAO " +
+            "  TATD.DS_OBSERVACAO, " +
+            "  IPM.CD_TIP_PRESC, " +
+            "  RD.CD_DOCUMENTO, " +
+            "  PROT.CD_TIPO " +
             "FROM DBAMV.TB_ATENDIME ATD " +
             "  JOIN DBAMV.ESPECIALID ESP " +
             "    ON ATD.CD_ESPECIALID = ESP.CD_ESPECIALID " +
@@ -35,6 +42,12 @@ public class PainelSrv extends AbstractSrv {
             "    ON ATD.CD_ATENDIMENTO = TEMP_PRO.CD_ATENDIMENTO " +
             "  LEFT JOIN DBAMV.PRE_MED PM " +
             "    ON ATD.CD_ATENDIMENTO = PM.CD_ATENDIMENTO " +
+            "  LEFT JOIN DBAMV.ITPRE_MED IPM " +
+            "    ON PM.CD_PRE_MED = IPM.CD_PRE_MED AND IPM.CD_TIP_PRESC IN ('25936', '25935', '25934', '25927', '25937') " +
+            "  LEFT JOIN DBAMV.REGISTRO_DOCUMENTO RD " +
+            "    ON ATD.CD_ATENDIMENTO = RD.CD_ATENDIMENTO AND RD.CD_DOCUMENTO = 168 " +
+            "  LEFT JOIN USRDBVAH.TB_PAINELPS_PROTOCOLO PROT " +
+            "    ON ATD.CD_ATENDIMENTO = PROT.ID " +
             "WHERE ATD.TP_ATENDIMENTO = 'U' " +
             "      AND ATD.DT_ALTA IS NULL " +
             "      AND ATD.CD_MULTI_EMPRESA = 1 " +
@@ -69,6 +82,9 @@ public class PainelSrv extends AbstractSrv {
         atendimento.put("alergias", row[7]);
         atendimento.put("prescricao", row[8] != null);
         atendimento.put("observacao", row[9]);
+        atendimento.put("internacao", row[10] != null);
+        atendimento.put("sepse", row[11] != null && ((BigDecimal) row[11]).intValue() == 168);
+        atendimento.put("protocolo", row[12]);
         atendimentos.put(row[0], atendimento);
         result.add(atendimento);
       } else {
@@ -78,6 +94,13 @@ public class PainelSrv extends AbstractSrv {
         if (row[8] != null) {
           atendimento.put("prescricao", true);
         }
+        if (row[10] != null) {
+          atendimento.put("internacao", true);
+        }
+        if (row[11] != null && ((BigDecimal) row[11]).intValue() == 168) {
+          atendimento.put("sepse", true);
+        }
+
       }
     }
     result.sort((Map o1, Map o2) -> (int) ((long) o2.get("tempo") - (long) o1.get("tempo")));
@@ -110,6 +133,61 @@ public class PainelSrv extends AbstractSrv {
     }
 
     return result;
+  }
+
+  public String protocolo(Integer atendimento, Integer tipo) {
+    String queryStr =
+        "SELECT COUNT(*) FROM USRDBVAH.TB_PAINELPS_PROTOCOLO WHERE ID = :ID";
+
+    Session session = getSession();
+    String output = "";
+
+    SQLQuery query = session.createSQLQuery(queryStr);
+
+    query.setParameter("ID", atendimento);
+
+    BigDecimal countResult = (BigDecimal) query.uniqueResult();
+
+    if (BigDecimal.ZERO.equals(countResult)) {
+      queryStr =
+          "INSERT INTO USRDBVAH.TB_PAINELPS_PROTOCOLO (ID, CD_TIPO) VALUES (:ID, :CD_TIPO)";
+      output = "Protocolo cadastrado";
+    } else {
+      queryStr =
+          "UPDATE USRDBVAH.TB_PAINELPS_PROTOCOLO SET CD_TIPO = :CD_TIPO WHERE ID = :ID";
+      output = "Protocolo atualizado";
+    }
+    query = session.createSQLQuery(queryStr);
+    query.setParameter("CD_TIPO", tipo);
+    query.setParameter("ID", atendimento);
+    query.executeUpdate();
+    return output;
+  }
+
+  public Map<String, Object> pacienteByAtendimento(Integer atendimento) {
+    String sql =
+        "SELECT PAC.NM_PACIENTE, CONV.NM_CONVENIO FROM DBAMV.TB_ATENDIME ATD " +
+            "  LEFT JOIN DBAMV.PACIENTE PAC " +
+            "    ON ATD.CD_PACIENTE = PAC.CD_PACIENTE " +
+            "  JOIN DBAMV.CONVENIO CONV " +
+            "    ON ATD.CD_CONVENIO = CONV.CD_CONVENIO " +
+            "WHERE CD_ATENDIMENTO = :CD_ATENDIMENTO";
+
+    Session session = getSession();
+    SQLQuery query = session.createSQLQuery(sql);
+    query.setParameter("CD_ATENDIMENTO", atendimento);
+
+    List<Object[]> result = query.list();
+
+    Map<String, Object> map = new HashMap<>();
+
+    for (Object[] row : result) {
+      map.put("nome", row[0]);
+      map.put("convenio", row[1]);
+    }
+
+    return map;
+
   }
 
 }

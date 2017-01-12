@@ -11,14 +11,21 @@ if (TARGET_ENV === 'development') {
   console.log('Serving locally...');
 
   module.exports = {
-    entry: [
-      'webpack-dev-server/client?http://localhost:3000/',
-      path.join(__dirname, 'src/elm/index.js')
-    ],
+    entry:
+      { 'main':
+          [ 'webpack-dev-server/client?http://localhost:3000/'
+          , path.join(__dirname, 'src/elm/main.js')
+          ]
+      , 'main-form':
+          [ 'webpack-dev-server/client?http://localhost:3000/'
+          , path.join(__dirname, 'src/elm/main-form.js')
+          ]
+
+    },
 
     output: {
       path: './dist',
-      filename: 'bundle.[hash].js'
+      filename: '[name].[hash].js'
     },
 
     resolve: {
@@ -56,9 +63,16 @@ if (TARGET_ENV === 'development') {
       new HtmlWebpackPlugin({
         title: 'Painel PS - Dev',
         template: './src/elm/index.ejs',
-        filename: './index.html'
+        filename: './index.html',
+        excludeChunks: ['main-form']
       }),
-      new ExtractTextPlugin('bundle.[hash].css')
+      new HtmlWebpackPlugin({
+        title: 'Panel PS | Cadastro Protocolo',
+        template: './src/elm/index.ejs',
+        filename: './protocolo.html',
+        excludeChunks: ['main']
+      }),
+      new ExtractTextPlugin('[name].[hash].css')
     ]
 
   };

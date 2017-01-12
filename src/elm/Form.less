@@ -1,0 +1,104 @@
+body {
+  background: rgb(41, 43, 65);
+}
+
+.input-block {
+  padding: 10px;
+}
+
+.label {
+  font-size: 25px;
+  color: #fff;
+}
+
+.span {
+  height: 35px;
+  line-height: 35px;
+  color: #fff;
+  padding: 11px 0;
+  font-size: 30px;
+  padding-left: 10px;
+  border-bottom: solid 2px rgb(255, 255, 255);;
+
+}
+
+.input {
+  width: 200px;
+  height: 35px;
+  line-height: 35px;
+  color: #fff;
+  font-size: 30px;
+  padding: 10px;
+  background: rgb(41, 43, 65);
+  border: none;
+  border-bottom: solid 2px rgb(255, 255, 255);;
+  transition: ease-in-out, background .35s ease-in-out;
+}
+
+.input:focus {
+  boder: none;
+  border-bottom: solid 2px rgb(74, 78, 117);;
+  background: rgb(74, 78, 117);
+}
+
+.placeholder(@rules) {
+
+    &::-webkit-input-placeholder {
+        @rules();
+    }
+    &:-moz-placeholder {
+        @rules();
+    }
+    &::-moz-placeholder {
+        @rules();
+    }
+    &:-ms-input-placeholder {
+        @rules();
+    }
+}
+
+.placeholder({
+    color: #cffbce;
+  });
+
+.submit-btn, .protocolo {
+  width: 200px;
+  height: 50px;
+  color: #fff;
+  font-size: 20px;
+  text-shadow: 2px 2px 5px #222;
+  border: none;
+  border-radius: 10px;
+  margin: 0 10px 10px 0;
+  cursor: pointer;
+  background: rgb(53, 54, 70);
+}
+
+.submit-btn {
+  background: rgb(12, 176, 193);
+}
+
+.submit-btn:disabled {
+  background: rgb(208, 250, 255);
+  color: #ddd;
+}
+
+.protocolo--nenhum {
+  background: rgb(28, 31, 32);
+}
+
+.protocolo--sepse {
+  background: rgb(226, 84, 255);
+}
+
+.protocolo--toraxica {
+  background: rgb(245, 29, 29);
+}
+
+.protocolo--renal {
+  background: rgb(72, 245, 29);
+}
+
+.protocolo--avc {
+  background: rgb(250, 255, 0);
+}

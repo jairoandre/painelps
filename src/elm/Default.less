@@ -62,7 +62,7 @@ body {
   color: #fff;
 }
 
-@wAtendimento: 350px;
+@wAtendimento: 300px;
 
 .th-atendimento, .td-atendimento {
   width: @wAtendimento;
@@ -89,7 +89,7 @@ body {
   background: rgba(17, 48, 80, 0.2);
 }
 
-@wPaciente: 300px;
+@wPaciente: 350px;
 @oPaciente: @wclassificacao + @oclassificacao;
 
 .th-paciente {
@@ -120,7 +120,7 @@ body {
   background: rgba(5, 61, 120, 0.2);
 }
 
-@wObservacao: 250px;
+@wObservacao: 270px;
 @oObservacao: @wConvenio + @oConvenio;
 
 .th-observacao {
@@ -150,7 +150,7 @@ body {
   height: @rowHeight;
 }
 
-@wEtapa: 120px;
+@wEtapa: 100px;
 @oEtapa: @wObservacao + @oObservacao;
 
 .th-etapa {
@@ -180,19 +180,19 @@ body {
   background: rgba(130, 46, 28, 0.2);
 }
 
-@wExames: 225px;
+@wExames: 350px;
 @oExames: @wTempo + @oTempo;
 
 .th-exames {
   width: @wExames;
   left: @oExames;
-  background: rgb(49, 120, 73);
+  background: rgb(0, 65, 47);
 }
 
 .td-exames {
   width: @wExames;
   left: @oExames;
-  background: rgba(49, 120, 73, 0.2);
+  background: rgba(0, 65, 47, 0.2);
   overflow: hidden;
 }
 
@@ -305,6 +305,43 @@ body {
   background-repeat: no-repat;
 }
 
+// PROTOCOLO
+
+@wP: 90px;
+@hP: 60px;
+
+.protocolo {
+  height: @hP;
+  line-height: @hP;
+  font-size: 20px;
+  width: @wP;
+  margin: ((@rowHeight - @hP) / 2) ((@wProtocolo - @wP) / 2);
+  text-align: center;
+  vertical-align: middle;
+  border-radius: 5px;
+}
+
+.protocolo--0 {
+  background: rgb(226, 84, 255);
+}
+
+.protocolo--1 {
+  line-height: @hP / 2;
+  background: rgb(245, 29, 29);
+}
+
+.protocolo--2 {
+  line-height: @hP / 2;
+  background: rgb(36, 138, 10);
+}
+
+.protocolo--3 {
+  color: #000;
+  font-size: 20px;
+  font-weight: bold;
+  background: rgb(250, 255, 0);
+}
+
 // 1	CADASTRO NO TOTEM
 // 10	CLASSIFICAÇÃO CHAMADA
 // 11	CLASSIFICAÇÃO INÍCIO
@@ -354,7 +391,7 @@ body {
 // 100	PRE-CLASSIFICACAO CHAMADA
 
 
-@convenioSize: 80px;
+@convenioSize: 75px;
 
 .convenio {
   height: @convenioSize;
@@ -364,7 +401,26 @@ body {
   background-color: #fff;
   background-size: @convenioSize;
   background-repeat: no-repeat;
+}
+
+.convenio--BRADESCO {
   background-image: url("public/imgs/bradesco.png");
+}
+
+.convenio--FUNCEF {
+  background-image: url("public/imgs/funcef.png");
+}
+
+.convenio--CST {
+  background-image: url("public/imgs/cst.png");
+}
+
+.convenio--CODESA {
+  background-image: url("public/imgs/codesa.png");
+}
+
+.convenio--BANESCAIXA {
+  background-image: url("public/imgs/banescaixa.png");
 }
 
 .convenio--UNIMED {
@@ -385,4 +441,24 @@ body {
 
 .convenio--PETROBRAS {
   background-image: url("public/imgs/petrobras.png")
+}
+
+.convenio--GEAP {
+  background-image: url("public/imgs/petrobras.png")
+}
+
+@internarSize: 45px;
+@internarColor: rgb(255, 240, 210);
+
+.internar {
+  height: @internarSize;
+  width: @internarSize;
+  margin: ((@rowHeight - @internarSize) / 2) ((@wInternar - @internarSize) / 2);
+  border: 2px solid @internarColor;
+  background-color: @internarColor;
+  border-radius: 50px;
+}
+
+.internar--nao {
+  background-color: transparent;
 }
