@@ -107,7 +107,7 @@ public class PainelSrv extends AbstractSrv {
     return result;
   }
 
-  public List<String> getExames(Long atendimento) {
+  public List<String> getExames(Integer atendimento) {
     String sql =
         "SELECT " +
             "    TP.DS_TIP_PRESC " +
@@ -166,11 +166,13 @@ public class PainelSrv extends AbstractSrv {
 
   public Map<String, Object> pacienteByAtendimento(Integer atendimento) {
     String sql =
-        "SELECT PAC.NM_PACIENTE, CONV.NM_CONVENIO FROM DBAMV.TB_ATENDIME ATD " +
+        "SELECT PAC.NM_PACIENTE, CONV.NM_CONVENIO, PROT.CD_TIPO FROM DBAMV.TB_ATENDIME ATD " +
             "  LEFT JOIN DBAMV.PACIENTE PAC " +
             "    ON ATD.CD_PACIENTE = PAC.CD_PACIENTE " +
-            "  JOIN DBAMV.CONVENIO CONV " +
+            "  LEFT JOIN DBAMV.CONVENIO CONV " +
             "    ON ATD.CD_CONVENIO = CONV.CD_CONVENIO " +
+            "  LEFT JOIN USRDBVAH.TB_PAINELPS_PROTOCOLO PROT " +
+            "    ON ATD.CD_ATENDIMENTO = PROT.ID " +
             "WHERE CD_ATENDIMENTO = :CD_ATENDIMENTO";
 
     Session session = getSession();
@@ -184,7 +186,10 @@ public class PainelSrv extends AbstractSrv {
     for (Object[] row : result) {
       map.put("nome", row[0]);
       map.put("convenio", row[1]);
+      map.put("tipo", row[2]);
     }
+
+    map.put("exames", getExames(atendimento));
 
     return map;
 

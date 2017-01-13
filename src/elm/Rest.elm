@@ -8,10 +8,10 @@ import Types exposing (..)
 
 urlPrefix : String
 urlPrefix =
-    if True then
+    if False then
         "http://10.1.8.118:8080/painelps/rest/api/"
     else
-        "/rest/api/"
+        "rest/api/"
 
 
 fetchPacientes : Cmd Msg

@@ -7,6 +7,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,15 +27,19 @@ public class MainApp {
   @GET
   @Path("/exames/{atendimento}")
   @Produces("application/json")
-  public List<String> exames(@PathParam("atendimento") Long atendimento) {
+  public List<String> exames(@PathParam("atendimento") Integer atendimento) {
     return painelSrv.getExames(atendimento);
   }
+
 
   @POST
   @Path("/protocolo")
   @Consumes("application/json")
+  @Produces("application/json")
   public Response protocolo(Map body) {
-    String output = painelSrv.protocolo((Integer) body.get("atendimento"), (Integer) body.get("tipo"));
+    String message = painelSrv.protocolo((Integer) body.get("atendimento"), (Integer) body.get("tipo"));
+    Map<String, Object> output = new HashMap<>();
+    output.put("message", message);
     return Response.status(200).entity(output).build();
   }
 
