@@ -35,7 +35,7 @@ type alias Model =
     , messages : Maybe (List ( MessageType, String ))
     , showForm : Bool
     , convenio : String
-    , exames : List String
+    , exames : List Exame
     }
 
 
@@ -45,6 +45,7 @@ type Msg
     | ReceivePaciente (Result Http.Error Paciente)
     | SavePaciente (Result Http.Error String)
     | PostPaciente
+    | ToggleExame Int
 
 
 type Field
@@ -56,7 +57,15 @@ type alias Paciente =
     { nome : String
     , convenio : String
     , tipo : Maybe Int
-    , exames : List String
+    , exames : List Exame
+    , examesRealizados : String
+    }
+
+
+type alias Exame =
+    { id : Int
+    , descricao : String
+    , realizado : Bool
     }
 
 
@@ -70,13 +79,22 @@ maybeString =
     JD.oneOf [ JD.null "", JD.string ]
 
 
+decodeExame : JD.Decoder Exame
+decodeExame =
+    JD.map3 Exame
+        (JD.field "id" JD.int)
+        (JD.field "descricao" JD.string)
+        (JD.field "realizado" JD.bool)
+
+
 decodePaciente : JD.Decoder Paciente
 decodePaciente =
-    JD.map4 Paciente
+    JD.map5 Paciente
         (JD.field "nome" maybeString)
         (JD.field "convenio" maybeString)
         (JD.field "tipo" (JD.maybe JD.int))
-        (JD.field "exames" (JD.list JD.string))
+        (JD.field "exames" (JD.list decodeExame))
+        (JD.field "examesRealizados" maybeString)
 
 
 urlPrefix : String
@@ -97,11 +115,30 @@ defaultInt str =
     Result.withDefault -1 (String.toInt str)
 
 
+idExameRealizado : Exame -> String
+idExameRealizado exame =
+    if exame.realizado then
+        (toString exame.id)
+    else
+        ""
+
+
+filterIds : String -> Bool
+filterIds id =
+    id /= ""
+
+
+examesRealizados : Model -> String
+examesRealizados model =
+    String.join ";" (List.filter filterIds (List.map idExameRealizado model.exames))
+
+
 encodePaciente : Model -> JE.Value
 encodePaciente model =
     JE.object
         [ ( "atendimento", JE.int <| defaultInt model.atendimento )
         , ( "tipo", JE.int <| defaultInt model.tipo )
+        , ( "examesRealizados", JE.string (examesRealizados model) )
         ]
 
 
@@ -146,7 +183,7 @@ update message model =
                         | atendimento = (String.filter Char.isDigit newValue)
                         , search = True
                         , showForm = False
-                        , timer = 300
+                        , timer = 600
                         , messages = Nothing
                         , tipo = ""
                         , exames = []
@@ -160,7 +197,7 @@ update message model =
         SearchAtendimento newTime ->
             if model.timer > 0 then
                 ( { model | timer = model.timer - 10 }, Cmd.none )
-            else if model.search then
+            else if (model.search && (String.length model.atendimento > 0)) then
                 ( { model | timer = 0, search = False }, fetchPaciente model.atendimento )
             else
                 ( { model | timer = 0 }, Cmd.none )
@@ -201,6 +238,21 @@ update message model =
 
         PostPaciente ->
             ( model, postPaciente model )
+
+        ToggleExame exameId ->
+            let
+                updatedExames =
+                    List.map (toggleExame exameId) model.exames
+            in
+                ( { model | exames = updatedExames, messages = Just [ ( InfoMessage, "Paciente modificado." ) ] }, Cmd.none )
+
+
+toggleExame : Int -> Exame -> Exame
+toggleExame exameId exame =
+    if exameId == exame.id then
+        { exame | realizado = not exame.realizado }
+    else
+        exame
 
 
 buttonClass : Model -> String -> String -> String
@@ -279,10 +331,7 @@ pacientForm model =
                     []
                 ]
               -- EXAMES
-            , div [ class "form-block" ]
-                [ label [ class "label" ] [ text "EXAMES: " ]
-                , div [] <| List.map (\s -> div [] [ text s ]) model.exames
-                ]
+            , examesToHtml model
               -- FIM EXAMES
             , div []
                 [ input
@@ -299,6 +348,33 @@ pacientForm model =
         text ""
 
 
+exameToHtml : Exame -> Html Msg
+exameToHtml exame =
+    let
+        ( checkClass, itemClass ) =
+            if exame.realizado then
+                ( "check-item check-item--active", "exames-item exames-item--realizado" )
+            else
+                ( "check-item", "exames-item" )
+    in
+        div [ class itemClass, onClick (ToggleExame exame.id) ]
+            [ div [ class checkClass ] []
+            , text exame.descricao
+            ]
+
+
+examesToHtml : Model -> Html Msg
+examesToHtml model =
+    if (List.length model.exames) == 0 then
+        text ""
+    else
+        div [ class "form-block" ]
+            [ label [ class "label" ] [ text "EXAMES (MARQUE OS REALIZADOS): " ]
+            , div [ class "exames" ] <|
+                List.map exameToHtml model.exames
+            ]
+
+
 view : Model -> Html Msg
 view model =
     let
@@ -308,7 +384,7 @@ view model =
                     text ""
 
                 Just msgs ->
-                    div [] (List.map printMessage msgs)
+                    div [ class "messages" ] (List.map printMessage msgs)
     in
         div []
             [ div [ class "input-block" ]

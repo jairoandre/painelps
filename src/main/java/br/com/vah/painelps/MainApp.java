@@ -31,13 +31,12 @@ public class MainApp {
     return painelSrv.getExames(atendimento);
   }
 
-
   @POST
   @Path("/protocolo")
   @Consumes("application/json")
   @Produces("application/json")
   public Response protocolo(Map body) {
-    String message = painelSrv.protocolo((Integer) body.get("atendimento"), (Integer) body.get("tipo"));
+    String message = painelSrv.protocolo(body);
     Map<String, Object> output = new HashMap<>();
     output.put("message", message);
     return Response.status(200).entity(output).build();

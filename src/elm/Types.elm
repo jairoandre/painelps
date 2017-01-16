@@ -2,6 +2,7 @@ module Types exposing (..)
 
 import Http
 import Time
+import Window
 
 
 type alias Model =
@@ -11,7 +12,13 @@ type alias Model =
     , error : Maybe Http.Error
     , loading : Bool
     , counter : Int
+    , scale : Float
     }
+
+
+initModel : Model
+initModel =
+    Model [] 1 0 Nothing True 0 0.65
 
 
 type alias PacientePS =
@@ -34,6 +41,7 @@ type alias PacientePS =
 
 type Msg
     = ReceivePacientes (Result Http.Error (List PacientePS))
+    | InitialSize Window.Size
     | TickTime Time.Time
     | UpdatePage Time.Time
     | UpdateCounter Time.Time

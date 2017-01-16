@@ -4,7 +4,9 @@ import Html exposing (Html)
 import Types exposing (..)
 import View exposing (..)
 import Rest exposing (..)
+import Task
 import Time
+import Window
 
 
 main : Program Never Model Msg
@@ -19,7 +21,7 @@ main =
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model [] 0 0 Nothing True 0, fetchPacientes )
+    ( initModel, initialSize )
 
 
 tickTime : List PacientePS -> List PacientePS
@@ -35,9 +37,21 @@ updateExamesPaciente cdAtend exames paciente =
         paciente
 
 
+initialSize : Cmd Msg
+initialSize =
+    Task.perform InitialSize Window.size
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case message of
+        InitialSize newSize ->
+            let
+                scale =
+                    (toFloat newSize.width) / 1920.0
+            in
+                ( { model | scale = scale }, fetchPacientes )
+
         ReceivePacientes (Ok pacientes) ->
             let
                 len =
@@ -88,9 +102,12 @@ update message model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ Time.every Time.minute TickTime
-        , Time.every Time.second UpdateCounter
-        , Time.every (2 * Time.minute) RefreshPacientes
-        , Time.every (10 * Time.second) UpdatePage
-        ]
+    if model.loading then
+        Sub.none
+    else
+        Sub.batch
+            [ Time.every Time.minute TickTime
+            , Time.every Time.second UpdateCounter
+            , Time.every (2 * Time.minute) RefreshPacientes
+            , Time.every (10 * Time.second) UpdatePage
+            ]

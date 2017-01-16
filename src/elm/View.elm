@@ -135,7 +135,7 @@ headerView =
 
 patientsPerPage : Int
 patientsPerPage =
-    8
+    7
 
 
 fancyTime : Int -> String
@@ -160,7 +160,7 @@ view model =
             div
                 [ class "content"
                 , style
-                    [ ( "-webkit-transform", "scale(0.655)" )
+                    [ ( "-webkit-transform", "scale(" ++ (toString model.scale) ++ ")" )
                     , ( "-webkit-transform-origin", "0 0" )
                     ]
                 ]

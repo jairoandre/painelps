@@ -108,16 +108,19 @@ public class PainelSrv extends AbstractSrv {
   }
 
   public List<String> getExames(Integer atendimento) {
-    String sql =
-        "SELECT " +
-            "    TP.DS_TIP_PRESC " +
-            "FROM DBAMV.PRE_MED PM " +
-            "  LEFT JOIN DBAMV.ITPRE_MED IPM " +
-            "    ON PM.CD_PRE_MED = IPM.CD_PRE_MED " +
-            "       AND IPM.CD_TIP_ESQ IN ('ETR','ECA','LAB','EXA','EXC','LAS','ERX','EUS') " +
-            "  LEFT JOIN DBAMV.TIP_PRESC TP " +
-            "    ON IPM.CD_TIP_PRESC = TP.CD_TIP_PRESC " +
-            "WHERE PM.CD_ATENDIMENTO = :CD_ATENDIMENTO";
+    String sql = "SELECT " +
+        "  TP.DS_TIP_PRESC " +
+        "FROM DBAMV.PRE_MED PM " +
+        "  LEFT JOIN DBAMV.ITPRE_MED IPM " +
+        "    ON PM.CD_PRE_MED = IPM.CD_PRE_MED " +
+        "       AND IPM.CD_TIP_ESQ IN ('ETR', 'ECA', 'LAB', 'EXA', 'EXC', 'LAS', 'ERX', 'EUS') " +
+        "  LEFT JOIN DBAMV.TIP_PRESC TP " +
+        "    ON IPM.CD_TIP_PRESC = TP.CD_TIP_PRESC " +
+        "  LEFT JOIN USRDBVAH.TB_PAINELPS_PROTOCOLO PROT " +
+        "    ON PROT.ID = PM.CD_ATENDIMENTO " +
+        "WHERE PM.CD_ATENDIMENTO = :CD_ATENDIMENTO " +
+        "      AND " +
+        "      (PROT.LS_EXAMES_REALIZADOS IS NULL OR PROT.LS_EXAMES_REALIZADOS NOT LIKE '%' || TO_CHAR(IPM.CD_ITPRE_MED) || '%')";
 
     Map<String, Object> params = new HashMap<>();
     params.put("CD_ATENDIMENTO", atendimento);
@@ -135,12 +138,49 @@ public class PainelSrv extends AbstractSrv {
     return result;
   }
 
-  public String protocolo(Integer atendimento, Integer tipo) {
+  public List<Map<String, Object>> getExamesComIds(Integer atendimento) {
+    String sql =
+        "SELECT " +
+            "IPM.CD_ITPRE_MED, TP.DS_TIP_PRESC " +
+            "FROM DBAMV.PRE_MED PM " +
+            "  LEFT JOIN DBAMV.ITPRE_MED IPM " +
+            "    ON PM.CD_PRE_MED = IPM.CD_PRE_MED " +
+            "       AND IPM.CD_TIP_ESQ IN ('ETR','ECA','LAB','EXA','EXC','LAS','ERX','EUS') " +
+            "  LEFT JOIN DBAMV.TIP_PRESC TP " +
+            "    ON IPM.CD_TIP_PRESC = TP.CD_TIP_PRESC " +
+            "WHERE PM.CD_ATENDIMENTO = :CD_ATENDIMENTO";
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("CD_ATENDIMENTO", atendimento);
+
+    List<Object[]> rows = runSql(sql, params);
+
+    List<Map<String, Object>> result = new ArrayList<>();
+
+    for (Object[] row : rows) {
+      if (row != null) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", row[0]);
+        map.put("descricao", row[1]);
+        if (row[0] != null && row[1] != null) {
+          result.add(map);
+        }
+      }
+    }
+
+    return result;
+  }
+
+  public String protocolo(Map body) {
     String queryStr =
         "SELECT COUNT(*) FROM USRDBVAH.TB_PAINELPS_PROTOCOLO WHERE ID = :ID";
 
+    Integer atendimento = (Integer) body.get("atendimento");
+    Integer tipo = (Integer) body.get("tipo");
+    String examesRealizados = (String) body.get("examesRealizados");
+
     Session session = getSession();
-    String output = "";
+    String output;
 
     SQLQuery query = session.createSQLQuery(queryStr);
 
@@ -150,23 +190,28 @@ public class PainelSrv extends AbstractSrv {
 
     if (BigDecimal.ZERO.equals(countResult)) {
       queryStr =
-          "INSERT INTO USRDBVAH.TB_PAINELPS_PROTOCOLO (ID, CD_TIPO) VALUES (:ID, :CD_TIPO)";
+          "INSERT INTO USRDBVAH.TB_PAINELPS_PROTOCOLO (ID, CD_TIPO, LS_EXAMES_REALIZADOS) VALUES (:ID, :CD_TIPO, :LS_EXAMES_REALIZADOS)";
       output = "Protocolo cadastrado";
     } else {
       queryStr =
-          "UPDATE USRDBVAH.TB_PAINELPS_PROTOCOLO SET CD_TIPO = :CD_TIPO WHERE ID = :ID";
+          "UPDATE USRDBVAH.TB_PAINELPS_PROTOCOLO SET CD_TIPO = :CD_TIPO, LS_EXAMES_REALIZADOS = :LS_EXAMES_REALIZADOS WHERE ID = :ID";
       output = "Protocolo atualizado";
     }
     query = session.createSQLQuery(queryStr);
     query.setParameter("CD_TIPO", tipo);
     query.setParameter("ID", atendimento);
+    query.setParameter("LS_EXAMES_REALIZADOS", examesRealizados);
     query.executeUpdate();
     return output;
   }
 
   public Map<String, Object> pacienteByAtendimento(Integer atendimento) {
     String sql =
-        "SELECT PAC.NM_PACIENTE, CONV.NM_CONVENIO, PROT.CD_TIPO FROM DBAMV.TB_ATENDIME ATD " +
+        "SELECT PAC.NM_PACIENTE, " +
+            "CONV.NM_CONVENIO, " +
+            "PROT.CD_TIPO, " +
+            "PROT.LS_EXAMES_REALIZADOS " +
+            "FROM DBAMV.TB_ATENDIME ATD " +
             "  LEFT JOIN DBAMV.PACIENTE PAC " +
             "    ON ATD.CD_PACIENTE = PAC.CD_PACIENTE " +
             "  LEFT JOIN DBAMV.CONVENIO CONV " +
@@ -183,13 +228,28 @@ public class PainelSrv extends AbstractSrv {
 
     Map<String, Object> map = new HashMap<>();
 
+    List<BigDecimal> examesIds = new ArrayList<>();
+
+
     for (Object[] row : result) {
       map.put("nome", row[0]);
       map.put("convenio", row[1]);
       map.put("tipo", row[2]);
+      map.put("examesRealizados", row[3]);
+      String row_3 = (String) row[3];
+      if (row_3 != null) {
+        String[] exames = row_3.split(";");
+        for (String exameIdStr : exames) {
+          examesIds.add(new BigDecimal(exameIdStr));
+        }
+      }
     }
 
-    map.put("exames", getExames(atendimento));
+    map.put("exames", getExamesComIds(atendimento));
+
+    for (Map<String, Object> exame : (List<Map>) map.get("exames")) {
+      exame.put("realizado", examesIds.contains(exame.get("id")));
+    }
 
     return map;
 
