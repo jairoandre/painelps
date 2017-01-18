@@ -30,7 +30,7 @@ body {
 
 .content {
   width: @width;
-  height: @height;
+  //height: @height;
 }
 
 @headerHeight: 80px;
@@ -182,17 +182,25 @@ body {
 @wExames: 320px;
 @oExames: @wTempo + @oTempo;
 
-.th-exames {
+.th-exames, .th-exames-pediatria {
   width: @wExames;
   left: @oExames;
   background: rgb(0, 65, 47);
 }
 
-.td-exames {
+.th-exames-pediatria {
+  width: @wExames + @wProtocolo;
+}
+
+.td-exames, .td-exames-pediatria {
   width: @wExames;
   left: @oExames;
   background: rgba(0, 65, 47, 0.2);
   overflow: hidden;
+}
+
+.td-exames-pediatria {
+  width: @wExames + @wProtocolo;
 }
 
 @wProtocolo: 120px;
@@ -208,6 +216,10 @@ body {
   width: @wProtocolo;
   left: @oProtocolo;
   background: rgba(65, 101, 0, 0.2);
+}
+
+.th-protocolo-pediatria, .td-protocolo-pediatria {
+  display: none;
 }
 
 @oInternar: @wProtocolo + @oProtocolo;
@@ -230,7 +242,7 @@ body {
 .rows {
   position: absolute;
   width: @width;
-  height: @height - @headerHeight;
+  //height: @height - @headerHeight;
   top: @headerHeight;
 }
 
@@ -306,37 +318,51 @@ body {
 
 // PROTOCOLO
 
-@wP: 90px;
-@hP: 60px;
+@wP: @wProtocolo - 4px;
 
 .protocolo {
-  height: @hP;
-  line-height: @hP;
-  font-size: 20px;
+  font-size: 14px;
   width: @wP;
-  margin: ((@rowHeight - @hP) / 2) ((@wProtocolo - @wP) / 2);
   text-align: center;
   vertical-align: middle;
   border-radius: 5px;
+  margin: 2px;
 }
 
-.protocolo--0 {
+.protocolos--1 > .protocolo {
+  height: 96px;
+  line-height: 96px;
+}
+
+.protocolos--2 > .protocolo {
+  height: 47px;
+  line-height: 47px;
+}
+
+.protocolos--3 > .protocolo {
+  height: 30px;
+  line-height: 30px;
+}
+
+.protocolos--4 > .protocolo {
+  height: 22.5px;
+  line-height: 22.5px;
+}
+
+.protocolo--sepse {
   background: rgb(226, 84, 255);
 }
 
-.protocolo--1 {
-  line-height: @hP / 2;
+.protocolo--toracica {
   background: rgb(245, 29, 29);
 }
 
-.protocolo--2 {
-  line-height: @hP / 2;
+.protocolo--renal {
   background: rgb(36, 138, 10);
 }
 
-.protocolo--3 {
+.protocolo--avc {
   color: #000;
-  font-size: 20px;
   font-weight: bold;
   background: rgb(250, 255, 0);
 }
@@ -444,6 +470,18 @@ body {
 
 .convenio--GEAP {
   background-image: url("public/imgs/petrobras.png")
+}
+
+.convenio--PASA {
+  background-image: url("public/imgs/pasa.png")
+}
+
+.convenio--CASSI {
+  background-image: url("public/imgs/cassi.png")
+}
+
+.convenio--POSTAL {
+  background-image: url("public/imgs/postal.png")
 }
 
 @internarSize: 45px;

@@ -21,7 +21,14 @@ public class MainApp {
   @Path("/painel")
   @Produces("application/json")
   public List<Map<String, Object>> painel() {
-    return painelSrv.especialidadeAtendimento();
+    return painelSrv.especialidadeAtendimento(false);
+  }
+
+  @GET
+  @Path("/pediatria")
+  @Produces("application/json")
+  public List<Map<String, Object>> pediatria() {
+    return painelSrv.especialidadeAtendimento(true);
   }
 
   @GET

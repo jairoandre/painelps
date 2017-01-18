@@ -3,6 +3,7 @@ module Types exposing (..)
 import Http
 import Time
 import Window
+import Navigation
 
 
 type alias Model =
@@ -13,12 +14,18 @@ type alias Model =
     , loading : Bool
     , counter : Int
     , scale : Float
+    , location : Navigation.Location
     }
 
 
-initModel : Model
-initModel =
-    Model [] 1 0 Nothing True 0 0.65
+devUrl : String
+devUrl =
+    "http://10.1.8.118:8080/painelps/rest/api/"
+
+
+initModel : Navigation.Location -> Model
+initModel location =
+    Model [] 1 0 Nothing True 0 0.65 location
 
 
 type alias PacientePS =
@@ -47,3 +54,4 @@ type Msg
     | UpdateCounter Time.Time
     | RefreshPacientes Time.Time
     | ReceiveExames Int (Result Http.Error (List String))
+    | UrlChange Navigation.Location

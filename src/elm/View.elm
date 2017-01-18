@@ -3,6 +3,7 @@ module View exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Types exposing (..)
+import Bitwise
 
 
 customDiv : String -> String -> List (Html Msg) -> Html Msg
@@ -68,31 +69,38 @@ scrollableItems counter items =
 
 protocoloToHtml : Int -> Html Msg
 protocoloToHtml protocolo =
-    if protocolo > -1 then
-        div [ class ("protocolo protocolo--" ++ toString protocolo) ]
-            [ case protocolo of
-                0 ->
-                    text "SEPSE"
+    let
+        protocolos =
+            (if (Bitwise.and 1 protocolo) == 1 then
+                [ div [ class "protocolo protocolo--sepse" ] [ text "SEPSE" ] ]
+             else
+                []
+            )
+                ++ (if (Bitwise.and 2 protocolo) == 2 then
+                        [ div [ class "protocolo protocolo--toracica" ] [ text "DOR TORÁCICA" ] ]
+                    else
+                        []
+                   )
+                ++ (if (Bitwise.and 4 protocolo) == 4 then
+                        [ div [ class "protocolo protocolo--renal" ] [ text "CÓLICA RENAL" ] ]
+                    else
+                        []
+                   )
+                ++ (if (Bitwise.and 8 protocolo) == 8 then
+                        [ div [ class "protocolo protocolo--avc" ] [ text "AVC" ] ]
+                    else
+                        []
+                   )
+    in
+        div [ class ("protocolos protocolos--" ++ (toString <| List.length protocolos)) ] protocolos
 
-                1 ->
-                    text "DOR TORÁX."
 
-                2 ->
-                    text "CÓLICA RENAL"
-
-                _ ->
-                    text "AVC"
-            ]
-    else
-        text ""
-
-
-pacientesToHtml : Int -> Int -> PacientePS -> Html Msg
-pacientesToHtml counter idx paciente =
+pacientesToHtml : Int -> String -> Int -> PacientePS -> Html Msg
+pacientesToHtml counter pSuffix idx paciente =
     div [ class <| "row row--" ++ (toString idx) ]
         [ customDiv "td td-atendimento"
             "lpadd"
-            [ div [ class "ellipsis-text" ] [ text <| (toString paciente.atendimento) ++ " - " ++ paciente.convenio ]
+            [ div [ class "ellipsis-text" ] [ text <| toString paciente.atendimento ]
             , div [ class "ellipsis-text" ] [ text paciente.especialidade ]
             ]
         , div [ class "td td-classificacao" ] [ classificacaoToHtml paciente.classificacao ]
@@ -107,8 +115,8 @@ pacientesToHtml counter idx paciente =
             ]
         , customDiv "td td-etapa" "" [ etapaToHtml paciente ]
         , rPaddDiv "td td-tempo" <| text <| fancyTime paciente.tempo
-        , customDiv "td td-exames" "in-exames" [ scrollableItems counter paciente.exames ]
-        , centeringDiv "td td-protocolo" <| protocoloToHtml paciente.protocolo
+        , customDiv ("td td-exames" ++ pSuffix) "in-exames" [ scrollableItems counter paciente.exames ]
+        , centeringDiv ("td td-protocolo" ++ pSuffix) <| protocoloToHtml paciente.protocolo
         , div [ class "td td-internar" ] <|
             if paciente.internacao then
                 [ div [ class "internar" ] [] ]
@@ -117,8 +125,8 @@ pacientesToHtml counter idx paciente =
         ]
 
 
-headerView : Html Msg
-headerView =
+headerView : String -> Html Msg
+headerView pSuffix =
     div [ class "header" ]
         [ lPaddDiv "th th-atendimento" <| text "ATEND./ESPEC."
         , centeringDiv "th th-classificacao" <| text "CLASS."
@@ -127,8 +135,8 @@ headerView =
         , lPaddDiv "th th-observacao" <| text "OBS./ALERGIAS"
         , centeringDiv "th th-etapa" <| text "ETAPA"
         , rPaddDiv "th th-tempo" <| text "TEMPO"
-        , lPaddDiv "th th-exames" <| text "EXAMES"
-        , centeringDiv "th th-protocolo" <| text "PROTOC."
+        , lPaddDiv ("th th-exames" ++ pSuffix) <| text "EXAMES"
+        , centeringDiv ("th th-protocolo" ++ pSuffix) <| text "PROTOC."
         , centeringDiv "th th-internar" <| text "INTER."
         ]
 
@@ -157,19 +165,26 @@ view : Model -> Html Msg
 view model =
     case model.error of
         Nothing ->
-            div
-                [ class "content"
-                , style
-                    [ ( "-webkit-transform", "scale(" ++ (toString model.scale) ++ ")" )
-                    , ( "-webkit-transform-origin", "0 0" )
+            let
+                pSuffix =
+                    if (String.contains "pediatria" model.location.hash) then
+                        "-pediatria"
+                    else
+                        ""
+            in
+                div
+                    [ class "content"
+                    , style
+                        [ ( "-webkit-transform", "scale(" ++ (toString model.scale) ++ ")" )
+                        , ( "-webkit-transform-origin", "0 0" )
+                        ]
                     ]
-                ]
-                [ headerView
-                , div [ class "rows" ] <|
-                    List.indexedMap (pacientesToHtml model.counter) <|
-                        List.take patientsPerPage <|
-                            List.drop (model.page * patientsPerPage) model.pacientes
-                ]
+                    [ headerView pSuffix
+                    , div [ class "rows" ] <|
+                        List.indexedMap (pacientesToHtml model.counter pSuffix) <|
+                            List.take patientsPerPage <|
+                                List.drop (model.page * patientsPerPage) model.pacientes
+                    ]
 
         Just e ->
             div [ style [ ( "position", "absolute" ), ( "padding", "20px" ), ( "color", "#fff" ) ] ] [ text <| (toString e) ]

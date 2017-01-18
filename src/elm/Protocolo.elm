@@ -8,6 +8,7 @@ import Json.Encode as JE
 import Char
 import Time
 import Http
+import Bitwise
 
 
 main : Program Never Model Msg
@@ -28,19 +29,21 @@ type MessageType
 
 type alias Model =
     { atendimento : String
-    , tipo : String
     , paciente : String
+    , tipo : Int
     , search : Bool
     , timer : Int
     , messages : Maybe (List ( MessageType, String ))
     , showForm : Bool
     , convenio : String
     , exames : List Exame
+    , loading : Bool
     }
 
 
 type Msg
-    = ChangeValue Field String
+    = ChangeAtendimento String
+    | ChangeTipo Int
     | SearchAtendimento Time.Time
     | ReceivePaciente (Result Http.Error Paciente)
     | SavePaciente (Result Http.Error String)
@@ -48,15 +51,10 @@ type Msg
     | ToggleExame Int
 
 
-type Field
-    = Atendimento
-    | Tipo
-
-
 type alias Paciente =
     { nome : String
     , convenio : String
-    , tipo : Maybe Int
+    , tipo : Int
     , exames : List Exame
     , examesRealizados : String
     }
@@ -71,7 +69,7 @@ type alias Exame =
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model "" "" "" False 0 Nothing False "" [], Cmd.none )
+    ( Model "" "" 0 False 0 Nothing False "" [] False, Cmd.none )
 
 
 maybeString : JD.Decoder String
@@ -92,7 +90,7 @@ decodePaciente =
     JD.map5 Paciente
         (JD.field "nome" maybeString)
         (JD.field "convenio" maybeString)
-        (JD.field "tipo" (JD.maybe JD.int))
+        (JD.field "tipo" (JD.oneOf [ JD.null 0, JD.int ]))
         (JD.field "exames" (JD.list decodeExame))
         (JD.field "examesRealizados" maybeString)
 
@@ -100,7 +98,7 @@ decodePaciente =
 urlPrefix : String
 urlPrefix =
     if False then
-        "http://10.1.8.118:8080/painelps/rest/api/"
+        "http://10.1.0.105:8080/painelps/rest/api/"
     else
         "rest/api/"
 
@@ -137,7 +135,7 @@ encodePaciente : Model -> JE.Value
 encodePaciente model =
     JE.object
         [ ( "atendimento", JE.int <| defaultInt model.atendimento )
-        , ( "tipo", JE.int <| defaultInt model.tipo )
+        , ( "tipo", JE.int model.tipo )
         , ( "examesRealizados", JE.string (examesRealizados model) )
         ]
 
@@ -176,29 +174,34 @@ formartErrorMessage message =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case message of
-        ChangeValue fieldToChange newValue ->
-            case fieldToChange of
-                Atendimento ->
-                    ( { model
-                        | atendimento = (String.filter Char.isDigit newValue)
-                        , search = True
-                        , showForm = False
-                        , timer = 600
-                        , messages = Nothing
-                        , tipo = ""
-                        , exames = []
-                      }
-                    , Cmd.none
-                    )
+        ChangeAtendimento newValue ->
+            ( { model
+                | atendimento = (String.filter Char.isDigit newValue)
+                , search = True
+                , showForm = False
+                , timer = 600
+                , messages = Nothing
+                , tipo = 0
+                , exames = []
+              }
+            , Cmd.none
+            )
 
-                Tipo ->
-                    ( { model | tipo = newValue, messages = Just [ ( InfoMessage, "Existem mudanças não salvas" ) ] }, Cmd.none )
+        ChangeTipo tipo ->
+            let
+                newTipo =
+                    if tipo == 0 then
+                        0
+                    else
+                        Bitwise.xor model.tipo tipo
+            in
+                ( { model | tipo = newTipo, messages = Just [ ( InfoMessage, "Existem mudanças não salvas" ) ] }, Cmd.none )
 
         SearchAtendimento newTime ->
             if model.timer > 0 then
                 ( { model | timer = model.timer - 10 }, Cmd.none )
             else if (model.search && (String.length model.atendimento > 0)) then
-                ( { model | timer = 0, search = False }, fetchPaciente model.atendimento )
+                ( { model | timer = 0, search = False, loading = True }, fetchPaciente model.atendimento )
             else
                 ( { model | timer = 0 }, Cmd.none )
 
@@ -209,6 +212,7 @@ update message model =
                         [ ( ErrorMessage, formartErrorMessage e )
                         , ( ErrorMessage, "Paciente não encontrado" )
                         ]
+                , loading = False
               }
             , Cmd.none
             )
@@ -218,14 +222,9 @@ update message model =
                 | paciente = paciente.nome
                 , convenio = paciente.convenio
                 , exames = paciente.exames
-                , tipo =
-                    case paciente.tipo of
-                        Nothing ->
-                            ""
-
-                        Just v ->
-                            toString v
+                , tipo = paciente.tipo
                 , showForm = True
+                , loading = False
               }
             , Cmd.none
             )
@@ -244,7 +243,7 @@ update message model =
                 updatedExames =
                     List.map (toggleExame exameId) model.exames
             in
-                ( { model | exames = updatedExames, messages = Just [ ( InfoMessage, "Paciente modificado." ) ] }, Cmd.none )
+                ( { model | exames = updatedExames, messages = Just [ ( InfoMessage, "Mudanças pendentes de registro." ) ] }, Cmd.none )
 
 
 toggleExame : Int -> Exame -> Exame
@@ -255,10 +254,15 @@ toggleExame exameId exame =
         exame
 
 
-buttonClass : Model -> String -> String -> String
-buttonClass model tipoClass tipo =
-    if model.tipo == tipo then
-        "protocolo protocolo--" ++ tipoClass
+buttonClass : Model -> String -> Int -> String
+buttonClass model btnClass tipo =
+    if tipo == 0 then
+        if model.tipo == 0 then
+            "protocolo protocolo--nenhum"
+        else
+            "protocolo"
+    else if (Bitwise.and model.tipo tipo) == tipo then
+        "protocolo protocolo--" ++ btnClass
     else
         "protocolo"
 
@@ -284,7 +288,17 @@ pacientForm : Model -> Html Msg
 pacientForm model =
     if model.showForm then
         div [ class "paciente-info" ]
-            [ div [ class "form-block" ]
+            [ div []
+                [ input
+                    [ type_ "button"
+                    , class "submit-btn"
+                    , value "SALVAR"
+                    , onClick PostPaciente
+                    , disabled (model.paciente == "")
+                    ]
+                    []
+                ]
+            , div [ class "form-block" ]
                 [ label [ class "label" ] [ text "NOME: " ]
                 , span [ class "span" ] [ text model.paciente ]
                 ]
@@ -295,37 +309,37 @@ pacientForm model =
             , div [ class "form-block" ]
                 [ label [ class "label" ] [ text "PROTOCOLO: " ]
                 , input
-                    [ onClick (ChangeValue Tipo "")
+                    [ onClick (ChangeTipo 0)
                     , type_ "button"
-                    , class (buttonClass model "nenhum" "")
+                    , class (buttonClass model "nenhum" 0)
                     , value "NENHUM"
                     ]
                     []
                 , input
-                    [ onClick (ChangeValue Tipo "0")
+                    [ onClick (ChangeTipo 1)
                     , type_ "button"
-                    , class (buttonClass model "sepse" "0")
+                    , class (buttonClass model "sepse" 1)
                     , value "SEPSE"
                     ]
                     []
                 , input
-                    [ onClick (ChangeValue Tipo "1")
+                    [ onClick (ChangeTipo 2)
                     , type_ "button"
-                    , class (buttonClass model "toraxica" "1")
-                    , value "DOR TORÁXICA"
+                    , class (buttonClass model "toracica" 2)
+                    , value "DOR TORÁCICA"
                     ]
                     []
                 , input
-                    [ onClick (ChangeValue Tipo "2")
+                    [ onClick (ChangeTipo 4)
                     , type_ "button"
-                    , class (buttonClass model "renal" "2")
+                    , class (buttonClass model "renal" 4)
                     , value "CÓLICA RENAL"
                     ]
                     []
                 , input
-                    [ onClick (ChangeValue Tipo "3")
+                    [ onClick (ChangeTipo 8)
                     , type_ "button"
-                    , class (buttonClass model "avc" "3")
+                    , class (buttonClass model "avc" 8)
                     , value "AVC"
                     ]
                     []
@@ -337,7 +351,7 @@ pacientForm model =
                 [ input
                     [ type_ "button"
                     , class "submit-btn"
-                    , value "Enviar"
+                    , value "SALVAR"
                     , onClick PostPaciente
                     , disabled (model.paciente == "")
                     ]
@@ -389,7 +403,7 @@ view model =
         div []
             [ div [ class "input-block" ]
                 [ div [ class "label" ] [ text "ATENDIMENTO" ]
-                , input [ class "input", onInput (ChangeValue Atendimento), value model.atendimento ] []
+                , input [ class "input", onInput ChangeAtendimento, readonly model.loading, value model.atendimento ] []
                 ]
             , messages
             , pacientForm model

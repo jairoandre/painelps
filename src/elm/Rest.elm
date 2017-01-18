@@ -14,9 +14,12 @@ urlPrefix =
         "rest/api/"
 
 
-fetchPacientes : Cmd Msg
-fetchPacientes =
-    Http.send ReceivePacientes (Http.get (urlPrefix ++ "painel") decodePacientes)
+fetchPacientes : Model -> Cmd Msg
+fetchPacientes model =
+    if (String.contains "pediatria" model.location.hash) then
+        Http.send ReceivePacientes (Http.get (urlPrefix ++ "pediatria") decodePacientes)
+    else
+        Http.send ReceivePacientes (Http.get (urlPrefix ++ "painel") decodePacientes)
 
 
 fetchExamesPacientes : List PacientePS -> Cmd Msg
@@ -60,4 +63,4 @@ decodePaciente =
         |> JDP.required "observacao" maybeString
         |> JDP.required "internacao" JD.bool
         |> JDP.required "sepse" JD.bool
-        |> JDP.required "protocolo" maybeInt
+        |> JDP.required "protocolo" (JD.oneOf [ JD.null 0, JD.int ])

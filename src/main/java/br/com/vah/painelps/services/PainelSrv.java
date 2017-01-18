@@ -10,7 +10,7 @@ import java.util.*;
 @Stateless
 public class PainelSrv extends AbstractSrv {
 
-  public List<Map<String, Object>> especialidadeAtendimento() {
+  public List<Map<String, Object>> especialidadeAtendimento(Boolean sohPediatria) {
 
     String sql =
         "SELECT " +
@@ -52,6 +52,7 @@ public class PainelSrv extends AbstractSrv {
             "      AND ATD.DT_ALTA IS NULL " +
             "      AND ATD.CD_MULTI_EMPRESA = 1 " +
             "      AND ATD.DT_ATENDIMENTO >= :DATE " +
+            (sohPediatria ? " AND ESP.DS_ESPECIALID LIKE '%PEDIATRIA%' " : " AND ESP.DS_ESPECIALID NOT LIKE '%PEDIATRIA%' ") +
             "ORDER BY CD_PACIENTE, DH_PROCESSO";
 
     Map<String, Object> params = new HashMap<>();
@@ -120,7 +121,8 @@ public class PainelSrv extends AbstractSrv {
         "    ON PROT.ID = PM.CD_ATENDIMENTO " +
         "WHERE PM.CD_ATENDIMENTO = :CD_ATENDIMENTO " +
         "      AND " +
-        "      (PROT.LS_EXAMES_REALIZADOS IS NULL OR PROT.LS_EXAMES_REALIZADOS NOT LIKE '%' || TO_CHAR(IPM.CD_ITPRE_MED) || '%')";
+        "      (PROT.LS_EXAMES_REALIZADOS IS NULL OR PROT.LS_EXAMES_REALIZADOS NOT LIKE '%' || TO_CHAR(IPM.CD_ITPRE_MED) || '%') " +
+        " ORDER BY IPM.CD_TIP_ESQ";
 
     Map<String, Object> params = new HashMap<>();
     params.put("CD_ATENDIMENTO", atendimento);
@@ -148,7 +150,8 @@ public class PainelSrv extends AbstractSrv {
             "       AND IPM.CD_TIP_ESQ IN ('ETR','ECA','LAB','EXA','EXC','LAS','ERX','EUS') " +
             "  LEFT JOIN DBAMV.TIP_PRESC TP " +
             "    ON IPM.CD_TIP_PRESC = TP.CD_TIP_PRESC " +
-            "WHERE PM.CD_ATENDIMENTO = :CD_ATENDIMENTO";
+            " WHERE PM.CD_ATENDIMENTO = :CD_ATENDIMENTO " +
+        " ORDER BY IPM.CD_TIP_ESQ ";
 
     Map<String, Object> params = new HashMap<>();
     params.put("CD_ATENDIMENTO", atendimento);

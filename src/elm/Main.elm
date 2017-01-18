@@ -1,17 +1,17 @@
 module Main exposing (..)
 
-import Html exposing (Html)
 import Types exposing (..)
 import View exposing (..)
 import Rest exposing (..)
 import Task
 import Time
 import Window
+import Navigation
 
 
 main : Program Never Model Msg
 main =
-    Html.program
+    Navigation.program UrlChange
         { init = init
         , update = update
         , view = view
@@ -19,9 +19,9 @@ main =
         }
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( initModel, initialSize )
+init : Navigation.Location -> ( Model, Cmd Msg )
+init location =
+    ( initModel location, initialSize )
 
 
 tickTime : List PacientePS -> List PacientePS
@@ -45,12 +45,19 @@ initialSize =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case message of
+        UrlChange newLocation ->
+            let
+                t =
+                    Debug.log "Location: " newLocation
+            in
+                ( { model | location = newLocation }, Cmd.none )
+
         InitialSize newSize ->
             let
                 scale =
                     (toFloat newSize.width) / 1920.0
             in
-                ( { model | scale = scale }, fetchPacientes )
+                ( { model | scale = scale }, fetchPacientes model )
 
         ReceivePacientes (Ok pacientes) ->
             let
@@ -97,7 +104,7 @@ update message model =
             ( { model | counter = model.counter + 1 }, Cmd.none )
 
         RefreshPacientes newTime ->
-            ( { model | loading = True }, fetchPacientes )
+            ( { model | loading = True }, fetchPacientes model )
 
 
 subscriptions : Model -> Sub Msg

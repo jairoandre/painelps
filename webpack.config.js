@@ -104,8 +104,8 @@ if (TARGET_ENV === 'production') {
             ]
         },
 
-        plugins: [new CleanWebpackPlugin(['src/main/webapp/public'], {
-            verbose: true,
+        plugins: [new CleanWebpackPlugin(['./src/main/webapp/public'], {
+            verbose: false,
             dry: true
         }), new HtmlWebpackPlugin({
             title: 'Painel PS',
